@@ -23,6 +23,11 @@ def parse_args():
                         dest='planner', default='rrt', required=False,
                         help='rrt or rrtstar')
 
+    parser.add_argument('--goalBias', action='store',
+                        dest='goal_bias', default='0.1', type=float,
+                        required=False,
+                        help='percentage of the time to assign q_goal to q_rand')
+
     return parser.parse_args()
 
 
@@ -42,6 +47,10 @@ def test_planning():
 
     obs1 = Point(-40, 60).buffer(10)
     obs2 = Point(40, 60).buffer(10)
+    #obs3 = Point(20, 20).buffer(10)
+    #obs4 = Point(-40, 50).buffer(10)
+
+    print('Making an arm with',args.arm_dofs,'degrees of freedom.')
 
     q_start = [0.] * args.arm_dofs
     q_goal  = [0.] * args.arm_dofs
@@ -50,8 +59,9 @@ def test_planning():
     ## goal_tolerance is the maximum number of degrees that
     ## any of the angles can differ from the goal configuration (l-inf)
 
-    prob = ArmProblem([0, 0, 0, 0], [90, 0, 0, 0], goal_tolerance=5.,
+    prob = ArmProblem(q_start, q_goal, goal_tolerance=5.,
                       obstacles=[obs1, obs2])
+    #                  obstacles=[obs1, obs2, obs3,obs4])
 
     rrt_prob = RRTArm(prob, angle_metric_l2)
 
@@ -60,12 +70,14 @@ def test_planning():
         print('Starting RRT Run maxsize: ', args.max_tree_size)
 
         path, tree = rrt.rrt(rrt_prob, prob.start(), prob.goal(),
-                             max_tree_size=args.max_tree_size)
+                             max_tree_size=args.max_tree_size,
+                             goal_bias=args.goal_bias)
     elif args.planner == 'rrtstar':
         print('Starting RRT* grow tree until size: ', args.max_tree_size)
 
         path, tree = rrt.rrtstar(rrt_prob, prob.start(), prob.goal(),
-                                 max_tree_size=args.max_tree_size)
+                                 max_tree_size=args.max_tree_size,
+                                 goal_bias=args.goal_bias)
 
     ax = plt.gca()
     draw_tree(tree, ax)
