@@ -1,7 +1,7 @@
 """ Unit tests for rrt.py with rrtstar
 
 Author: Nathan Sprague, Kevin Molloy
-Version: Oct 2020
+Version: Oct 2022
 """
 
 import unittest
@@ -11,11 +11,7 @@ from shapely.geometry import Point
 from py_arm.arm_planning import ArmProblem
 
 from rrt_problems_py_arm import RRTArm
-
-from rrt_problems import RRTProblem
-
 import rrt
-import rrt_problems
 import rrt_problems
 
 class RRTTests(unittest.TestCase):
@@ -25,18 +21,18 @@ class RRTTests(unittest.TestCase):
 
     def test_find_2dof_rrtpath(self, run_rrtstar=False):
         q_start = [0] * 2
-        q_goal  = [90, 0]
+        q_goal = [90, 0]
 
         obs1 = Point(-40, 60).buffer(10)
 
         prob = ArmProblem(q_start, q_goal, goal_tolerance=5.,
-                      obstacles=[obs1])
+                          obstacles=[obs1])
 
         rrt_prob = RRTArm(prob)
 
         print('Starting RRT Run:')
 
-        max_tree = 1500
+        max_tree = 2500
         if run_rrtstar:
             path, tree = rrt.rrtstar(rrt_prob, prob.start(), prob.goal(),
                                      max_tree_size=max_tree)

@@ -3,29 +3,23 @@ This module contains the abstract superclass for RRT planning problems, as
 well as one sample problem.
 
 Author: Nathan Sprague
-Version: 9/25/2020
+Version: 9/27/2022
 """
 from abc import ABC, abstractmethod
 import numpy as np
 
 
 class RRTProblem(ABC):
-    """Extend this class in order to apply RRT to a particular planning
-    problem.
-
-    """
+    """Abstract base class for planning problems."""
 
     @abstractmethod
     def random_state(self):
-        """Return a random point (numpy array) in the configuration space.
-
-        """
+        """Return a random point (numpy array) in the configuration space."""
         pass
 
     @abstractmethod
-    def select_input(self, q_rand, q_near, step_size=None):
-        """
-        Select an action that moves q_near toward q_rand.
+    def select_input(self, q_rand, q_near):
+        """Select an action that moves q_near toward q_rand.
 
         q_rand - numpy array representing a random point in the config space
         q_near - numpy array representing a coniguration corresponding
@@ -38,9 +32,7 @@ class RRTProblem(ABC):
 
     @abstractmethod
     def new_state(self, q_near, u):
-        """Return the state reached by starting in q_near and taking action u.
-
-        """
+        """Return the state reached by taking action u in state q_near."""
         pass
 
     @abstractmethod

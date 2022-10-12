@@ -71,7 +71,7 @@ class SpatialMap(object):
 
     
     def within_delta(self, pos, delta):
-        """ Return the (key, value) tuples within delta of pos. """
+        """Return the values within delta of pos. """
         return [item[1] for item in self.within_delta_items(pos, delta)]
         
     def nearest(self, pos):

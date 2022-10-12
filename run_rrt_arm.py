@@ -1,21 +1,30 @@
 import numpy as np
 import argparse
 from py_arm.arm_planning import ArmProblem
-import py_arm.geom_util
 import rrt
-from rrt_problems_py_arm import draw_tree, RRTArm, angle_metric_l2
+from rrt_problems_py_arm import RRTArm
+from shapely.geometry import Point
+from py_arm import arm_plotting
+import matplotlib.pyplot as plt
 
+def draw_tree(tree, ax=None, linewidth=.5, markersize=3):
+    """ Draw a full RRT using matplotlib. """
+    import matplotlib.pyplot as plt
+    if not ax:
+        ax = plt.gca()
+    for node in tree:
+        if node.parent is not None:
+            ax.plot([node.parent.x[0], node.x[0]], [node.parent.x[1],
+                                                    node.x[1]], 'k.-')
 
-    
 def parse_args():
     parser = argparse.ArgumentParser(description='pyarm Planner Args')
 
+    parser.add_argument('--dof', action='store', type=int,
+                        default=2, required=False,
+                        help='Arm degrees of freedom')
 
-    parser.add_argument('--armDOFs', action='store', type=int,
-                        dest='arm_dofs', default=2, required=False,
-                        help='number of DOFs arms')
-
-    parser.add_argument('--maxTreeSize', action='store', type=int,
+    parser.add_argument('--max-tree-size', action='store', type=int,
                         dest='max_tree_size', default=10000, required=False,
                         help='treesize (max for RRT, size for RRT*)')
 
@@ -23,7 +32,7 @@ def parse_args():
                         dest='planner', default='rrt', required=False,
                         help='rrt or rrtstar')
 
-    parser.add_argument('--goalBias', action='store',
+    parser.add_argument('--goal-bias', action='store',
                         dest='goal_bias', default='0.1', type=float,
                         required=False,
                         help='percentage of the time to assign q_goal to q_rand')
@@ -32,28 +41,22 @@ def parse_args():
 
 
 def test_planning():
-    from shapely.geometry import Point
-    from py_arm.arm_plotting import draw_c_space
-    from py_arm import arm_plotting
-    import matplotlib.pyplot as plt
 
     args = parse_args()
 
-    ## only use random seed 0 for testing
-    ## this MUST be removed to achieve any variance in your
-    ## solutions.
-
+    # Only use random seed 0 for testing this MUST be removed to
+    # achieve any variance in your solutions.
     np.random.seed(0)
 
     obs1 = Point(-40, 60).buffer(10)
     obs2 = Point(40, 60).buffer(10)
-    #obs3 = Point(20, 20).buffer(10)
-    #obs4 = Point(-40, 50).buffer(10)
+    obs3 = Point(20, 20).buffer(10)
+    obs4 = Point(-20, 60).buffer(10)
 
-    print('Making an arm with',args.arm_dofs,'degrees of freedom.')
+    print('Making an arm with', args.dof, 'degrees of freedom.')
 
-    q_start = [0.] * args.arm_dofs
-    q_goal  = [0.] * args.arm_dofs
+    q_start = [0.] * args.dof
+    q_goal = [0.] * args.dof
     q_goal[0] = 90.
 
     ## goal_tolerance is the maximum number of degrees that
@@ -61,11 +64,11 @@ def test_planning():
 
     prob = ArmProblem(q_start, q_goal, goal_tolerance=5.,
                       obstacles=[obs1, obs2])
-    #                  obstacles=[obs1, obs2, obs3,obs4])
+    #                  obstacles=[obs1, obs2, obs3, obs4])
 
-    rrt_prob = RRTArm(prob, angle_metric_l2)
+    rrt_prob = RRTArm(prob)
 
-        
+
     if args.planner == 'rrt':
         print('Starting RRT Run maxsize: ', args.max_tree_size)
 
@@ -78,6 +81,8 @@ def test_planning():
         path, tree = rrt.rrtstar(rrt_prob, prob.start(), prob.goal(),
                                  max_tree_size=args.max_tree_size,
                                  goal_bias=args.goal_bias)
+
+    print("Path cost: ", tree.get_cost(path[-1]))
 
     ax = plt.gca()
     draw_tree(tree, ax)
@@ -93,10 +98,10 @@ def test_planning():
         print(tree.num_nodes())
 
         plan_animator = arm_plotting.PlanAnimator(prob.arm,
-                                              prob.obstacles, 10)
+                                                  prob.obstacles, 10)
         plan_animator.animate_plan(prob.start(), prob.goal(), result)
-    
-        
+
+
 
 if __name__ == "__main__":
 

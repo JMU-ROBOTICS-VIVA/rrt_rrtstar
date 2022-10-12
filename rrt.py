@@ -13,7 +13,7 @@ class RRTNode(object):
     """ RRT Tree node. """
 
     def __init__(self, parent, u, x):
-        """ Constructor.
+        """Constructor.
         Arguments:
             parent - Parent node in the tree.
             u      - control signal that moves from the parents state to x.
@@ -24,18 +24,17 @@ class RRTNode(object):
         self.x = x
 
     def __repr__(self):
-        """ String representation for debugging purposes. """
+        """String representation for debugging purposes."""
         return "<u: {}, x: {}>".format(self.u, self.x)
 
 class Tree:
     """ Rapidly exploring rapid tree data structure. """
 
     def __init__(self, q_init, dist_metric=None):
-        """ q_init - root, d-dimensional numpy array """
+        """q_init - root, d-dimensional numpy array."""
         self.sm = SpatialMap(dim=q_init.size, dist_metric=dist_metric)
         self.root = RRTNode(None, None, q_init)
         self.sm.add(q_init, self.root)
-      
 
     def add_node(self, q_new):
         node = RRTNode(None, None, q_new)
@@ -49,15 +48,11 @@ class Tree:
         new_node.parent = near_node
         new_node.u = u
 
-    """
-        Get distance from x to y 
-    """
     def get_distance(self, x, y):
         return self.sm.get_distance(x, y)
-    """
-        Get cost to node x from the root
-    """
+
     def get_cost(self, node):
+        """Get cost to this node from the root."""
         cost = 0
         while node.parent is not None:
             cost += self.sm.get_distance(node.x, node.parent.x)
@@ -75,7 +70,7 @@ def rrt(problem, q_init, q_goal, max_tree_size=float('inf'), goal_bias=0.0):
     """ Path search using RRT.
 
     Args:
-        problem:   a problem instance that provides three methods:
+        problem:   a problem instance that provides the methods:
 
             problem.random_state() -
                Return a randomly generated configuration
@@ -102,15 +97,15 @@ def rrt(problem, q_init, q_goal, max_tree_size=float('inf'), goal_bias=0.0):
 
 
     tree = Tree(q_init, problem.dist_fn)  # Make the start state the root
-                                              # of the tree
+                                          # of the tree
 
     raise NotImplementedError
 
-def rrtstar(problem, q_init, q_goal, max_tree_size=int(10000), goal_bias = 0.0):
-    """ Path search using RRTStar.
+def rrtstar(problem, q_init, q_goal, max_tree_size=10000, goal_bias=0.0):
+    """Path search using RRTStar.
 
     Args:
-        problem:   a problem instance that provides three methods:
+        problem:   a problem instance that provides the methods:
 
             problem.random_state() -
                Return a randomly generated configuration
@@ -177,7 +172,7 @@ def test_simple_rrt():
     plt.plot(result[:, 0], result[:, 1], '.-')
     plt.show()
     plt.clf()
-  
+
     path, tree = rrtstar(lines, x_start, x_goal, 300)
     result = np.zeros((len(path), 2))
     for i in range(len(path)):
